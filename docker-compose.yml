@@ -1,0 +1,18 @@
+version: "3.8"
+networks:
+  default:
+    driver: bridge
+services:
+  server:
+    container_name: "${PROJECT_NAME}-server"
+    image: "fascan/server"
+    restart: on-failure
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      SERVER_PORT: ${SERVER_PORT}
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    networks:
+      - default
