@@ -1,6 +1,7 @@
 package com.kmr.fascan.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.kmr.fascan.ScanResultActivity
 import com.kmr.fascan.databinding.HomeFragmentBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.HomeViewModel
@@ -67,6 +69,17 @@ class HomeFragment : Fragment() {
             intent,
             REQUEST_ACTION_PICK_PICTURE
         )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_ACTION_PICK_PICTURE) {
+            val intent = Intent(requireContext(), ScanResultActivity::class.java).apply {
+                putExtra("picture", data!!.data)
+            }
+            startActivity(intent)
+        }
     }
 
     companion object {
