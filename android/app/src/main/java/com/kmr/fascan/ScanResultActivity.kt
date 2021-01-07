@@ -1,12 +1,17 @@
 package com.kmr.fascan
 
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModel
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.kmr.fascan.databinding.ScanResultActivityBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.ScanResultViewModel
@@ -17,6 +22,7 @@ class ScanResultActivity : AppCompatActivity() {
     private val viewModel: ScanResultViewModel by viewModels {
         ViewModelUtils.provideScanResultViewModelFactory()
     }
+    private lateinit var sourcePictureUri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +36,8 @@ class ScanResultActivity : AppCompatActivity() {
 
         intent.extras?.run {
             if (containsKey("picture")) {
-                loadSourcePicture(getParcelable<Uri>("picture")!!)
+                sourcePictureUri = getParcelable("picture")!!
+                loadSourcePicture(sourcePictureUri)
             }
         }
     }
@@ -49,6 +56,27 @@ class ScanResultActivity : AppCompatActivity() {
     private fun loadSourcePicture(uri: Uri) {
         with(binding) {
             ivwSourcePicture.setImageURI(uri)
+        }
+    }
+
+    private fun validateSourcePicture() {
+        val bmp = getBitmapFromUri(sourcePictureUri)
+        val fvi = FirebaseVisionImage.fromBitmap(bmp)
+        FirebaseVision.getInstance().visionFaceDetector.detectInImage(fvi)
+            .addOnSuccessListener { faces ->
+                // must check number of faces.
+            }
+    }
+
+    private fun getBitmapFromUri(selectedPhotoUri: Uri): Bitmap {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            MediaStore.Images.Media.getBitmap(
+                this.contentResolver,
+                selectedPhotoUri
+            )
+        } else {
+            val source = ImageDecoder.createSource(this.contentResolver, selectedPhotoUri)
+            ImageDecoder.decodeBitmap(source)
         }
     }
 }
