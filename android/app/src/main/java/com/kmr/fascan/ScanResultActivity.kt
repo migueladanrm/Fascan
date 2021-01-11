@@ -8,10 +8,11 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetection
 import com.kmr.fascan.databinding.ScanResultActivityBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.ScanResultViewModel
@@ -57,15 +58,36 @@ class ScanResultActivity : AppCompatActivity() {
         with(binding) {
             ivwSourcePicture.setImageURI(uri)
         }
+
+        validateSourcePicture()
     }
 
     private fun validateSourcePicture() {
-        val bmp = getBitmapFromUri(sourcePictureUri)
-        val fvi = FirebaseVisionImage.fromBitmap(bmp)
-        FirebaseVision.getInstance().visionFaceDetector.detectInImage(fvi)
-            .addOnSuccessListener { faces ->
-                // must check number of faces.
+        val img = InputImage.fromFilePath(this, sourcePictureUri)
+        val detector = FaceDetection.getClient()
+        detector.process(img).addOnSuccessListener { faces ->
+            val faceCount = faces.size
+
+            if (faceCount < 1 || faceCount > 1) {
+                val builder = AlertDialog.Builder(this)
+                    .setMessage(
+                        if (faceCount < 1)
+                            "No se han detectado rostros, pruebe con otra fotografía."
+                        else "Se ha detectado más de un rostro. Use una fotografía con una sola persona."
+                    )
+                    .setPositiveButton(
+                        "Aceptar"
+                    ) { dialog, _ ->
+                        dialog.dismiss()
+                        finish()
+                    }.show()
+
+                builder.show()
+            } else {
+                // done!
             }
+
+        }
     }
 
     private fun getBitmapFromUri(selectedPhotoUri: Uri): Bitmap {
