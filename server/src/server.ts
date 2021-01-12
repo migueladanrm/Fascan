@@ -2,6 +2,8 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import * as http from "http";
+import { DetectorRoute } from "./routes/detector.route";
+import { authenticateRequest } from "./middlewares/authentication.middleware";
 export class Server {
   private app: Application;
   private port = process.env.SERVER_PORT || 8000;
@@ -29,9 +31,11 @@ export class Server {
           .header("Access-Control-Allow-Credentials", "true");
         next();
       })
+      .use(authenticateRequest)
       .get("/", (req: Request, res: Response) => {
         res.send("<h1>Hello, world!</h1>");
-      });
+      })
+      .use("/detector", DetectorRoute(null));
   }
 
   private setupServer(): void {
