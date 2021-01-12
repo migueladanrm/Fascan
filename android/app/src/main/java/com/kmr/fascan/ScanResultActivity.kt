@@ -2,6 +2,7 @@ package com.kmr.fascan
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -64,6 +65,7 @@ class ScanResultActivity : AppCompatActivity() {
 
     private fun validateSourcePicture() {
         val img = InputImage.fromFilePath(this, sourcePictureUri)
+        img.mediaImage
         val detector = FaceDetection.getClient()
         detector.process(img).addOnSuccessListener { faces ->
             val faceCount = faces.size
@@ -84,9 +86,20 @@ class ScanResultActivity : AppCompatActivity() {
 
                 builder.show()
             } else {
-                // done!
-            }
+                val target = faces.first()
+                val boundingBox = target.boundingBox
 
+                extractFace(boundingBox)
+            }
+        }
+    }
+
+    private fun extractFace(bb: Rect) {
+        val bmp = getBitmapFromUri(sourcePictureUri)
+        val new = Bitmap.createBitmap(bmp, bb.left, bb.top, bb.width(), bb.height())
+
+        with(binding) {
+            ivwFace.setImageBitmap(new)
         }
     }
 
