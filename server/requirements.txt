@@ -5,4 +5,4 @@ Flask
 google-cloud-storage
 numpy
 python-dotenv
-psycopg2
+psycopg2-binary

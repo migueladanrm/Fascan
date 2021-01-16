@@ -19,7 +19,7 @@ services:
       - default
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./postgres/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
+      - ./db/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
   server:
     container_name: "${PROJECT_NAME}-server"
     image: "fascan/server"
