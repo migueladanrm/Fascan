@@ -41,4 +41,4 @@ def analyze_face():
 
 if __name__ == "__main__":
     load_dotenv()
-    app.run()
+    app.run(port=7000)
