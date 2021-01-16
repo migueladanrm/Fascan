@@ -1,7 +1,7 @@
+from dotenv import load_dotenv
 from flask import Flask, flash, request, redirect, url_for
 import fascan
 import os
-from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -25,17 +25,18 @@ def add_face():
         return {"error": "An unknown error was occurred."}, 400
 
 
-# @app.route("/detect", methods=["POST"])
-# def analyze_face():
-#     try:
-#         if request.method == "POST":
-#             if 0 < len(request.files):
-#                 file = request.files.values()[0]
-#                 return "   "
-#             else:
-#                 return {"error": "No file was provided."}, 400
-#     except:
-#         return {"error": "An unknown error was occurred."}, 400
+@app.route("/detect", methods=["POST"])
+def analyze_face():
+    try:
+        if request.method == "POST":
+            if 0 < len(request.files):
+                file = request.files["file"]
+                result = fascan.detect_face(file, True)
+                return result, 200
+            else:
+                return {"error": "No file was provided."}, 400
+    except Exception as ex:
+        return {"error": ex}, 400
 
 
 if __name__ == "__main__":
