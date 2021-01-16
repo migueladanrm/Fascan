@@ -1,0 +1,8 @@
+dlib
+face-recognition
+face-recognition-models
+Flask
+google-cloud-storage
+numpy
+python-dotenv
+psycopg2-binary

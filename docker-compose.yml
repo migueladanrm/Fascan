@@ -2,7 +2,24 @@ version: "3.8"
 networks:
   default:
     driver: bridge
+volumes:
+  db_data:
 services:
+  db:
+    container_name: "${PROJECT_NAME}-db"
+    image: postgres:12-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - default
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql
   server:
     container_name: "${PROJECT_NAME}-server"
     image: "fascan/server"
@@ -10,9 +27,13 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    depends_on:
+      - db
     environment:
-      SERVER_PORT: ${SERVER_PORT}
+      DB_CONNECTION_STRING: ${SERVER_DB_CONNECTION_STRING}
+      GC_BUCKET: ${SERVER_GC_BUCKET}
+      GOOGLE_APPLICATION_CREDENTIALS: ${SERVER_GC_CREDENTIALS}
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "${SERVER_PORT}:7000"
     networks:
       - default
