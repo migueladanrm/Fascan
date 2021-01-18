@@ -35,11 +35,11 @@ def detect_face(image_file, save=True):
     idx, prob = 0, 0.0
 
     for i in range(0, len(result) - 1):
-        print(result[i])
-        if(result[i] > prob):
-            print(result[i])
+        tmp_prob = result[i]
+
+        if(prob < tmp_prob and tmp_prob < 1.0):
             idx = i
-            prob = result[i]
+            prob = tmp_prob
 
     target_face = get_face(raw_encodings[idx]["id"])
 
