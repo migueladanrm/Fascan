@@ -12,7 +12,7 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:context=".ScanResultActivity">
 
         <LinearLayout
@@ -27,7 +27,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="vertical">
 
                     <TextView
@@ -42,10 +42,24 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12sp" />
 
-                    <ImageView android:id="@+id/ivwFace"
+                    <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"/>
+                        android:minHeight="200dp">
+
+                        <ImageView
+                            android:id="@+id/ivwFace"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp" />
+
+                        <ProgressBar
+                            android:id="@+id/pbrLoading"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:indeterminate="true" />
+                    </FrameLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

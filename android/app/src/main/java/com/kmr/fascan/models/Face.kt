@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class Face(
     @SerializedName("id")
     val id: String,
-    @SerializedName("probability")
-    val probability: Float,
+    @SerializedName("distance")
+    val distance: Float,
     @SerializedName("resource")
     val resourceUrl: String
 )

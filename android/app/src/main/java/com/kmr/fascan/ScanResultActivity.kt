@@ -3,16 +3,22 @@ package com.kmr.fascan
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.kmr.fascan.databinding.ScanResultActivityBinding
@@ -109,7 +115,7 @@ class ScanResultActivity : AppCompatActivity() {
         val new = Bitmap.createBitmap(bmp, bb.left, bb.top, bb.width(), bb.height())
 
         with(binding) {
-            ivwFace.setImageBitmap(new)
+            ivwSourcePicture.setImageBitmap(new)
         }
 
         send(new)
@@ -133,7 +139,28 @@ class ScanResultActivity : AppCompatActivity() {
                 )
             }.let { face ->
                 with(binding) {
-                    Glide.with(this@ScanResultActivity).load(face.resourceUrl).into(ivwFace)
+                    Glide.with(this@ScanResultActivity).load(face.resourceUrl)
+                        .listener(object : RequestListener<Drawable> {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                return false
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                with(binding) { pbrLoading.visibility = View.GONE }
+                                return false
+                            }
+                        }).into(ivwFace)
                 }
             }
         }

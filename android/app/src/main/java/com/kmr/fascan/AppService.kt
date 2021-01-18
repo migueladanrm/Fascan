@@ -17,7 +17,7 @@ interface AppService {
     suspend fun detectFace(@Part payload: MultipartBody.Part): Face
 
     companion object {
-        private const val BASE_URL = ""
+        private const val BASE_URL = BuildConfig.API_BASE_URL
         private lateinit var instance: AppService
 
         fun create(): AppService {
