@@ -12,11 +12,21 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.bumptech.glide.Glide
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.kmr.fascan.databinding.ScanResultActivityBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.ScanResultViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
+import java.util.*
 
 class ScanResultActivity : AppCompatActivity() {
 
@@ -100,6 +110,32 @@ class ScanResultActivity : AppCompatActivity() {
 
         with(binding) {
             ivwFace.setImageBitmap(new)
+        }
+
+        send(new)
+    }
+
+    private fun send(facePicture: Bitmap) {
+        val tmpFile = File.createTempFile(UUID.randomUUID().toString(), ".jpg", cacheDir)
+
+        FileOutputStream(tmpFile).use { fos ->
+            facePicture.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+        }
+
+        GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.IO) {
+                AppService.create().detectFace(
+                    MultipartBody.Part.createFormData(
+                        "file",
+                        tmpFile.name,
+                        tmpFile.asRequestBody()
+                    )
+                )
+            }.let { face ->
+                with(binding) {
+                    Glide.with(this@ScanResultActivity).load(face.resourceUrl).into(ivwFace)
+                }
+            }
         }
     }
 
