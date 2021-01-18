@@ -31,16 +31,15 @@ def detect_face(image_file, save=True):
         source_encodings.append(np.array(obj["encodings"]))
 
     result = face_distance(source_encodings, input_encodings)
-
-    idx, prob = 0, 0.0
+    idx, dist = 0, result[0]
 
     for i in range(0, len(result) - 1):
-        tmp_prob = result[i]
+        tmp_dist = result[i]
 
-        if(prob < tmp_prob and tmp_prob < 1.0):
+        if tmp_dist < dist:
             idx = i
-            prob = tmp_prob
+            dist = tmp_dist
 
     target_face = get_face(raw_encodings[idx]["id"])
 
-    return {"id": target_face["id"], "resource": target_face["resource"], "probability": prob}
+    return {"id": target_face["id"], "resource": target_face["resource"], "distance": dist}

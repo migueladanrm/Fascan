@@ -51,7 +51,6 @@ def get_face(id: str) -> dict:
 
 
 def get_face_encodings() -> []:
-    print("hola")
     data = []
 
     conn = get_connection()
