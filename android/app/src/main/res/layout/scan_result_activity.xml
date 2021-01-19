@@ -13,6 +13,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
         tools:context=".ScanResultActivity">
 
         <LinearLayout
@@ -26,15 +27,16 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="Tu foto"
+                android:layout_marginBottom="16dp"
+                android:text="@string/YourFace"
                 android:textSize="22sp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp">
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="12dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -63,8 +65,8 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="Tu parecido"
+                android:layout_marginBottom="16dp"
+                android:text="@string/YourSimilarFace"
                 android:textSize="22sp" />
 
             <androidx.cardview.widget.CardView
@@ -72,7 +74,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -102,7 +105,43 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Buscando un rostro similar..." />
+                            android:text="@string/SearchingSimilarFace"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/lblNoFaceFound"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_baseline_sick" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/NoSimilarFaceFound"
+                            android:textAlignment="center"
+                            android:textSize="16sp" />
+
+                        <Button
+                            android:id="@+id/btnTryAgain"
+                            style="?attr/buttonBarButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/TryAgain"
+                            android:textAllCaps="false" />
+
                     </LinearLayout>
                 </FrameLayout>
             </androidx.cardview.widget.CardView>

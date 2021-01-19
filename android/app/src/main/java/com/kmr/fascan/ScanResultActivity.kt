@@ -3,7 +3,6 @@ package com.kmr.fascan
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,10 +14,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.kmr.fascan.databinding.ScanResultActivityBinding
@@ -48,6 +43,8 @@ class ScanResultActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.scan_result_activity)
         binding.vm = viewModel
+        binding.lblNoFaceFound.visibility = View.GONE
+        binding.btnTryAgain.setOnClickListener { finish() }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.show()
@@ -55,7 +52,7 @@ class ScanResultActivity : AppCompatActivity() {
         intent.extras?.run {
             if (containsKey("picture")) {
                 sourcePictureUri = getParcelable("picture")!!
-                loadSourcePicture(sourcePictureUri)
+                validateSourcePicture()
             }
         }
     }
@@ -71,17 +68,8 @@ class ScanResultActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun loadSourcePicture(uri: Uri) {
-//        with(binding) {
-//            ivwSourcePicture.setImageURI(uri)
-//        }
-
-        validateSourcePicture()
-    }
-
     private fun validateSourcePicture() {
         val img = InputImage.fromFilePath(this, sourcePictureUri)
-        img.mediaImage
         val detector = FaceDetection.getClient()
         detector.process(img).addOnSuccessListener { faces ->
             val faceCount = faces.size
@@ -90,11 +78,11 @@ class ScanResultActivity : AppCompatActivity() {
                 val builder = AlertDialog.Builder(this)
                     .setMessage(
                         if (faceCount < 1)
-                            "No se han detectado rostros, pruebe con otra fotografía."
-                        else "Se ha detectado más de un rostro. Use una fotografía con una sola persona."
+                            R.string.NoFaceDetected
+                        else R.string.MoreThanOneFaceDetected
                     )
                     .setPositiveButton(
-                        "Aceptar"
+                        R.string.Accept
                     ) { dialog, _ ->
                         dialog.dismiss()
                         finish()
@@ -130,18 +118,27 @@ class ScanResultActivity : AppCompatActivity() {
         }
 
         GlobalScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.IO) {
-                AppService.create().detectFace(
-                    MultipartBody.Part.createFormData(
-                        "file",
-                        tmpFile.name,
-                        tmpFile.asRequestBody()
+            try {
+                withContext(Dispatchers.IO) {
+                    AppService.create().detectFace(
+                        MultipartBody.Part.createFormData(
+                            "file",
+                            tmpFile.name,
+                            tmpFile.asRequestBody()
+                        )
                     )
-                )
-            }.let { face ->
+                }.let { face ->
+                    with(binding) {
+                        Glide.with(this@ScanResultActivity).load(face.resourceUrl)
+                            .into(ivwOutput)
+
+                        lblSearchingOutput.visibility = View.GONE
+                    }
+                }
+            } catch (ex: Exception) {
                 with(binding) {
-                    Glide.with(this@ScanResultActivity).load(face.resourceUrl)
-                        .into(ivwOutput)
+                    lblSearchingOutput.visibility = View.GONE
+                    lblNoFaceFound.visibility = View.VISIBLE
                 }
             }
         }

@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Fascan</string>
+    <string name="NoFaceDetected">No se han detectado rostros, pruebe con otra fotografía.</string>
+    <string name="MoreThanOneFaceDetected">Se ha detectado más de un rostro. Use una fotografía con una sola persona.</string>
+    <string name="Accept">Aceptar</string>
+    <string name="SelectAnOptionToStart">Seleccione una opción para empezar.</string>
+    <string name="FromCamera">Desde selfie</string>
+    <string name="FromGallery">Desde galería</string>
+    <string name="YourFace">Tu foto</string>
+    <string name="YourSimilarFace">Tu parecido</string>
+    <string name="SearchingSimilarFace">Buscando un rostro similar...</string>
+    <string name="TryAgain">Intentar de nuevo</string>
+    <string name="NoSimilarFaceFound">No encontramos ningún rostro parecido al tuyo.</string>
 </resources>
