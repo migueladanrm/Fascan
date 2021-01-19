@@ -72,9 +72,9 @@ class ScanResultActivity : AppCompatActivity() {
     }
 
     private fun loadSourcePicture(uri: Uri) {
-        with(binding) {
-            ivwSourcePicture.setImageURI(uri)
-        }
+//        with(binding) {
+//            ivwSourcePicture.setImageURI(uri)
+//        }
 
         validateSourcePicture()
     }
@@ -115,7 +115,8 @@ class ScanResultActivity : AppCompatActivity() {
         val new = Bitmap.createBitmap(bmp, bb.left, bb.top, bb.width(), bb.height())
 
         with(binding) {
-            ivwSourcePicture.setImageBitmap(new)
+            ivwSource.setImageBitmap(new)
+            pbrLoadingSource.visibility = View.GONE
         }
 
         send(new)
@@ -125,7 +126,7 @@ class ScanResultActivity : AppCompatActivity() {
         val tmpFile = File.createTempFile(UUID.randomUUID().toString(), ".jpg", cacheDir)
 
         FileOutputStream(tmpFile).use { fos ->
-            facePicture.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            facePicture.compress(Bitmap.CompressFormat.JPEG, 55, fos)
         }
 
         GlobalScope.launch(Dispatchers.Main) {
@@ -140,27 +141,7 @@ class ScanResultActivity : AppCompatActivity() {
             }.let { face ->
                 with(binding) {
                     Glide.with(this@ScanResultActivity).load(face.resourceUrl)
-                        .listener(object : RequestListener<Drawable> {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                return false
-                            }
-
-                            override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                with(binding) { pbrLoading.visibility = View.GONE }
-                                return false
-                            }
-                        }).into(ivwFace)
+                        .into(ivwOutput)
                 }
             }
         }
