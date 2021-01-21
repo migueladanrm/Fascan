@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +17,7 @@ import com.kmr.fascan.ScanResultActivity
 import com.kmr.fascan.databinding.HomeFragmentBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.HomeViewModel
+import kotlinx.android.synthetic.main.home_fragment.*
 
 class HomeFragment : Fragment() {
 
@@ -33,11 +36,16 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnFromGallery.setOnClickListener(btnFromGalleryOnClickListener)
+        binding.btnFromCamera.setOnClickListener(btnFromCameraOnClickListener)
         return binding.root
     }
 
     private val btnFromGalleryOnClickListener = View.OnClickListener {
         checkPermissionsForStorage()
+    }
+
+    private val btnFromCameraOnClickListener = View.OnClickListener {
+        checkPermissionForCamera()
     }
 
     private fun checkPermissionsForStorage() {
@@ -62,6 +70,23 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun checkPermissionForCamera(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(activity?.checkSelfPermission(Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED){
+
+                val permissionCamera = arrayOf(Manifest.permission.CAMERA)
+
+                requestPermissions(
+                    permissionCamera,
+                    PERMISSION_CAMERA
+                )
+            } else{
+                takePicture()
+            }
+        }
+    }
+
     private fun pickImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
@@ -69,6 +94,11 @@ class HomeFragment : Fragment() {
             intent,
             REQUEST_ACTION_PICK_PICTURE
         )
+    }
+
+    private fun takePicture(){
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(intent, REQUEST_CODE_TAKE_PICTURE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -80,11 +110,21 @@ class HomeFragment : Fragment() {
             }
             startActivity(intent)
         }
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_TAKE_PICTURE){
+            Log.d("HOMEFRAGMENT", "im here")
+            val intent = Intent(requireContext(), ScanResultActivity::class.java).apply {
+                putExtra("picture", data!!.data)
+            }
+            startActivity(intent)
+        }
+
     }
 
     companion object {
         const val REQUEST_ACTION_PICK_PICTURE = 0xA1
         const val PERMISSION_READ_EXTERNAL_STORAGE = 0xA2
         const val PERMISSION_WRITE_EXTERNAL_STORAGE = 0xA3
+        const val REQUEST_CODE_TAKE_PICTURE = 1888
+        const val PERMISSION_CAMERA = 100
     }
 }

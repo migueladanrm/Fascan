@@ -46,6 +46,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/btnFromCamera"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
