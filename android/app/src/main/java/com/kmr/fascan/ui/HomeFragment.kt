@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -18,6 +20,7 @@ import com.kmr.fascan.databinding.HomeFragmentBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.HomeViewModel
 import kotlinx.android.synthetic.main.home_fragment.*
+import java.net.URI
 
 class HomeFragment : Fragment() {
 
@@ -111,9 +114,10 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_TAKE_PICTURE){
-            Log.d("HOMEFRAGMENT", "im here")
+            val image = data?.extras?.get("data") as Uri
+            Log.d("HOMEFRAGMENT", "IMAGE: $image")
             val intent = Intent(requireContext(), ScanResultActivity::class.java).apply {
-                putExtra("picture", data!!.data)
+                putExtra("picture", image)
             }
             startActivity(intent)
         }
