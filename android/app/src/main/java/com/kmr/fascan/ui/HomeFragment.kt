@@ -4,23 +4,22 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.kmr.fascan.ScanResultActivity
 import com.kmr.fascan.databinding.HomeFragmentBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.HomeViewModel
-import kotlinx.android.synthetic.main.home_fragment.*
-import java.net.URI
+import java.io.File
+import java.util.*
 
 class HomeFragment : Fragment() {
 
@@ -28,6 +27,8 @@ class HomeFragment : Fragment() {
         ViewModelUtils.provideLoginViewModelFactory()
     }
     private lateinit var binding: HomeFragmentBinding
+
+    private var lastTakenPhoto: File? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,10 +74,11 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun checkPermissionForCamera(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if(activity?.checkSelfPermission(Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_DENIED){
+    private fun checkPermissionForCamera() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (activity?.checkSelfPermission(Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED
+            ) {
 
                 val permissionCamera = arrayOf(Manifest.permission.CAMERA)
 
@@ -84,7 +86,7 @@ class HomeFragment : Fragment() {
                     permissionCamera,
                     PERMISSION_CAMERA
                 )
-            } else{
+            } else {
                 takePicture()
             }
         }
@@ -99,9 +101,17 @@ class HomeFragment : Fragment() {
         )
     }
 
-    private fun takePicture(){
+    private fun takePicture() {
+        lastTakenPhoto =
+            File.createTempFile(UUID.randomUUID().toString(), ".jpg", requireContext().cacheDir)
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, REQUEST_CODE_TAKE_PICTURE)
+        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        intent.putExtra(
+            MediaStore.EXTRA_OUTPUT,
+            FileProvider.getUriForFile(requireContext(), "com.kmr.fileprovider", lastTakenPhoto!!)
+        )
+
+        startActivityForResult(intent, REQUEST_ACTION_TAKE_PICTURE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -113,22 +123,21 @@ class HomeFragment : Fragment() {
             }
             startActivity(intent)
         }
-        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_TAKE_PICTURE){
-            val image = data?.extras?.get("data") as Uri
-            Log.d("HOMEFRAGMENT", "IMAGE: $image")
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_ACTION_TAKE_PICTURE) {
+            val uri = Uri.fromFile(lastTakenPhoto)
+
             val intent = Intent(requireContext(), ScanResultActivity::class.java).apply {
-                putExtra("picture", image)
+                putExtra("picture", uri)
             }
             startActivity(intent)
         }
-
     }
 
     companion object {
         const val REQUEST_ACTION_PICK_PICTURE = 0xA1
         const val PERMISSION_READ_EXTERNAL_STORAGE = 0xA2
         const val PERMISSION_WRITE_EXTERNAL_STORAGE = 0xA3
-        const val REQUEST_CODE_TAKE_PICTURE = 1888
+        const val REQUEST_ACTION_TAKE_PICTURE = 1888
         const val PERMISSION_CAMERA = 100
     }
 }
