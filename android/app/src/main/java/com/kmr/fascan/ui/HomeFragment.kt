@@ -2,8 +2,11 @@ package com.kmr.fascan.ui
 
 import android.Manifest
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,7 +21,12 @@ import com.kmr.fascan.ScanResultActivity
 import com.kmr.fascan.databinding.HomeFragmentBinding
 import com.kmr.fascan.utils.ViewModelUtils
 import com.kmr.fascan.viewmodels.HomeViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 
 class HomeFragment : Fragment() {
@@ -123,13 +131,57 @@ class HomeFragment : Fragment() {
             }
             startActivity(intent)
         }
+
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_ACTION_TAKE_PICTURE) {
             val uri = Uri.fromFile(lastTakenPhoto)
 
-            val intent = Intent(requireContext(), ScanResultActivity::class.java).apply {
-                putExtra("picture", uri)
+            val progress = ProgressDialog(requireContext()).apply {
+                setMessage("Optimizando imagen...")
+                setCancelable(false)
+                setCanceledOnTouchOutside(false)
             }
-            startActivity(intent)
+            progress.show()
+
+            GlobalScope.launch(Dispatchers.Main) {
+                withContext(Dispatchers.IO) {
+                    getBitmapFromUri(uri).let { bmp ->
+                        val tmp =
+                            Bitmap.createScaledBitmap(bmp, bmp.width / 2, bmp.height / 2, true)
+                        val tmpFile =
+                            File.createTempFile(
+                                UUID.randomUUID().toString(),
+                                ".jpg",
+                                context?.cacheDir
+                            )
+
+                        FileOutputStream(tmpFile).use { fos ->
+                            tmp.compress(Bitmap.CompressFormat.JPEG, 50, fos)
+                        }
+
+                        tmpFile
+                    }
+                }.let { file ->
+                    progress.dismiss()
+
+                    val intent = Intent(requireContext(), ScanResultActivity::class.java).apply {
+                        putExtra("picture", Uri.fromFile(file))
+                    }
+                    startActivity(intent)
+                }
+            }
+        }
+    }
+
+    private fun getBitmapFromUri(selectedPhotoUri: Uri): Bitmap {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            MediaStore.Images.Media.getBitmap(
+                requireContext().contentResolver,
+                selectedPhotoUri
+            )
+        } else {
+            val source =
+                ImageDecoder.createSource(requireContext().contentResolver, selectedPhotoUri)
+            ImageDecoder.decodeBitmap(source)
         }
     }
 
